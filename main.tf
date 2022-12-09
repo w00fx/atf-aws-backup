@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 # AWS Backup vault
-resource "aws_iam_policy_document" "backup-key-policies" {
+data "aws_iam_policy_document" "backup-key-policies" {
   statement {
     actions = ["kms:*"]
 
@@ -34,14 +34,14 @@ resource "aws_iam_policy_document" "backup-key-policies" {
     condition {
       test = "StringEquals"
       variable = "kms:ViaService"
-      value = ["backup.amazonaws.com"]
+      values = ["backup.amazonaws.com"]
     }
   }
 }
 
 resource "aws_kms_key" "backup-key" {
   enable_key_rotation = true
-  policy = aws_iam_policy_document.backup-key-policies
+  policy = data.aws_iam_policy_document.backup-key-policies.json
 }
 
 resource "aws_kms_alias" "backup-key-alias" {
@@ -53,17 +53,16 @@ resource "aws_kms_alias" "backup-key-alias" {
 resource "aws_backup_vault" "ab_vault" {
   count       = var.enabled && var.vault_name != null ? 1 : 0
   name        = var.vault_name
-  kms_key_arn = aws_kms_key.backup-key
+  kms_key_arn = aws_kms_key.backup-key.arn
   tags        = var.tags
 }
 
 resource "aws_backup_vault_policy" "example" {
-  backup_vault_name = aws_backup_vault.example.name
+  backup_vault_name = aws_backup_vault.ab_vault[0].id # maybe has a logic error here. Need to check it out closer.
 
   policy = <<POLICY
 {
   "Version": "2012-10-17",
-  "Id": "default",
   "Statement": [
     {
       "Sid": "Allow acces to backup vault",
@@ -72,13 +71,12 @@ resource "aws_backup_vault_policy" "example" {
         "AWS": "*"
       },
       "Action": [
-        "CopyIntoBackupVault"
+        "backup:CopyIntoBackupVault"
       ],
       "Resource": "*",
       "Condition": {
-        "StringEquals": {"aws:PrincipalOrgId": ${var.principalOrgId}}
+        "StringEquals": {"aws:PrincipalOrgId": "${var.principalOrgId}"}
       }
-
     }
   ]
 }

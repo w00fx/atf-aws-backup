@@ -2,7 +2,7 @@ module "this" {
   source = "../"
 
   # OrganizationID
-  principalOrgId = "NEED_TO_BE_INSERTED"
+  principalOrgId = "NEED_TO_BE_CHANGED"
 
   # Vault
   vault_name = "awsbackup-vault"
@@ -29,7 +29,7 @@ module "this" {
     {
       name              = "daily-backup"
       schedule          = "cron(0 0 0 1/1 * ? * )"
-      target_vault_name = var.vault_name
+      target_vault_name = "Default"
       start_window      = 120
       completion_window = 360
       lifecycle = {
@@ -43,7 +43,7 @@ module "this" {
     {
       name                = "weekly-backup"
       schedule            = "cron(0 0 3 ? * SUN * )"
-      target_vault_name   = var.vault_name
+      target_vault_name   = "Default"
       start_window        = 120
       completion_window   = 360
       lifecycle           = {
@@ -58,7 +58,7 @@ module "this" {
     {
       name                = "monthly-backup"
       schedule            = "cron(0 0 3 1 1/1 ? * )"
-      target_vault_name   = var.vault_name
+      target_vault_name   = "Default"
       start_window        = 120
       completion_window   = 360
       lifecycle           = {
