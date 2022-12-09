@@ -25,10 +25,10 @@ module "this" {
   # }
 
   # Multiple rules using a list of maps
-  rules = [
+  rules = [ # Want to change to use inside Backup Account.
     {
       name              = "daily-backup"
-      schedule          = "cron(0 12 * * ? *)"
+      schedule          = "cron(0 0 0 1/1 * ? * )"
       target_vault_name = var.vault_name
       start_window      = 120
       completion_window = 360
@@ -42,7 +42,7 @@ module "this" {
     },
     {
       name                = "weekly-backup"
-      schedule            = "cron(0 3 * * SUN)"
+      schedule            = "cron(0 0 3 ? * SUN * )"
       target_vault_name   = var.vault_name
       start_window        = 120
       completion_window   = 360
@@ -57,7 +57,7 @@ module "this" {
     },
     {
       name                = "monthly-backup"
-      schedule            = "cron(0 3 1 * *)"
+      schedule            = "cron(0 0 3 1 1/1 ? * )"
       target_vault_name   = var.vault_name
       start_window        = 120
       completion_window   = 360
@@ -73,7 +73,6 @@ module "this" {
   ]
 
   # Multiple selections
-  #  - Selection-1: By tags: Environment = prod, Owner = devops
   selections = [
     {
       name = "tagging-backup"
@@ -87,7 +86,7 @@ module "this" {
     }
   ]
 
-  tags = {
+  tags = { # Not sure to what put in here
     Owner       = "backup-aws"
     Environment = "prod"
     Terraform   = true
